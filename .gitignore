@@ -1,0 +1,5 @@
+.env
+*.pem
+*.db
+node_modules
+dist
