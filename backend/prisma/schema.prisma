@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Subscription {
+  id           String    @id @default(cuid())
+  memberId     String
+  member       User      @relation(fields: [memberId], references: [id])
+  businessId   String
+  business     Business  @relation(fields: [businessId], references: [id])
+  memberWallet String
+  feeMinor     Int
+  accessToken  String
+  manageUrl    String
+  status       String    @default("ACTIVE") // ACTIVE | CANCELLED
+  nextChargeAt DateTime
+  createdAt    DateTime  @default(now())
+  payments     Payment[]
+}
+
+model Payment {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  status         String       // SUCCESS | FAILED
+  amountMinor    Int
+  opPaymentId    String?
+  error          String?
+  createdAt      DateTime     @default(now())
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  passwordHash  String
+  role          String         // OWNER | MEMBER
+  walletUrl     String         // owners receive here, members pay from here
+  createdAt     DateTime       @default(now())
+  businesses    Business[]
+  subscriptions Subscription[]
+}
+
+model Business {
+  id            String         @id @default(cuid())
+  name          String
+  feeMinor      Int            // 2500 = 25.00
+  ownerId       String
+  owner         User           @relation(fields: [ownerId], references: [id])
+  createdAt     DateTime       @default(now())
+  subscriptions Subscription[]
+}
