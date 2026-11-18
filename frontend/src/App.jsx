@@ -4,6 +4,9 @@ import { Routes, Route } from "react-router-dom";
 import { getMe } from "./api.js";
 import OwnerDashboard from "./pages/owner/OwnerDashboard.jsx";
 import MemberDashboard from "./pages/MemberDashboard.jsx";
+import JoinPage from "./pages/JoinPage.jsx";
+import CallbackPage from "./pages/CallbackPage.jsx";
+import OutOfScope from "./pages/OutOfScope.jsx";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -43,6 +46,9 @@ export default function App() {
       <Route path="/" element={<Login />} />
       <Route path="/owner" element={<OwnerDashboard />} />
       <Route path="/member" element={<MemberDashboard />} />
+      <Route path="/join/ironcore" element={<JoinPage />} />
+      <Route path="/callback" element={<CallbackPage />} />
+      <Route path="*" element={<OutOfScope />} />
     </Routes>
   );
 }
