@@ -1,6 +1,8 @@
 import Login from "./pages/Login.jsx";
 import { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 import { getMe } from "./api.js";
+import OwnerDashboard from "./pages/owner/OwnerDashboard.jsx";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -35,5 +37,10 @@ export default function App() {
     return <div>Checking your session...</div>;
   }
 
-  return <Login />;
+  return (
+    <Routes>
+      <Route path="/" element={<Login />} />
+      <Route path="/owner" element={<OwnerDashboard />} />
+    </Routes>
+  );
 }
