@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import "./styles/Login.css";
 import RECURPAYLOGO from "../assets/RecurPay-Icon.svg";
+import { signup } from "../api.js";
 
 const benefits = [
   { icon: ShieldCheck, text: "Capped & revocable authorizations" },
@@ -25,8 +26,14 @@ export default function Login() {
   const [mode, setMode] = useState("signup");
   const [role, setRole] = useState("owner");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    walletUrl: "",
+  });
   const isSignup = mode === "signup";
   const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -36,16 +43,55 @@ export default function Login() {
     setShowPassword(false);
   }
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
-    if (isSignup && !form.name.trim())
-      return setNotice("Please enter your full name.");
-    if (!form.email.trim())
-      return setNotice("Please enter your email address.");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      return setNotice("Enter a valid email address.");
-    if (form.password.length < 8)
-      return setNotice("Your password must be at least 8 characters.");
+
+    if (!isSignup) {
+      setNotice("Login integration is our next step.");
+      return;
+    }
+
+    if (!form.name.trim()) {
+      setNotice("Please enter your full name.");
+      return;
+    }
+
+    if (!form.email.trim()) {
+      setNotice("Please enter your email address.");
+      return;
+    }
+
+    if (form.password.length < 8) {
+      setNotice("Password must be at least 8 characters.");
+      return;
+    }
+
+    if (!form.walletUrl.trim()) {
+      setNotice("Please enter your wallet URL.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setNotice("");
+
+      const result = await signup({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: role === "owner" ? "OWNER" : "MEMBER",
+        walletUrl: form.walletUrl,
+      });
+
+      localStorage.setItem("token", result.token);
+      localStorage.setItem("user", JSON.stringify(result.user));
+
+      setNotice("Account created successfully!");
+    } catch (error) {
+      setNotice(error.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -195,6 +241,21 @@ export default function Login() {
                 </button>
               </div>
             </label>
+            {isSignup && (
+              <label className="field">
+                <span>Interledger Wallet URL</span>
+
+                <div className="input-wrap">
+                  <input
+                    type="text"
+                    name="walletUrl"
+                    value={form.walletUrl}
+                    onChange={update}
+                    placeholder="https://ilp.interledger-test.dev/..."
+                  />
+                </div>
+              </label>
+            )}
 
             {notice && (
               <div
@@ -204,10 +265,15 @@ export default function Login() {
                 {notice}
               </div>
             )}
-            <button className="submit-btn" type="submit">
-              {isSignup
-                ? `Create ${role === "owner" ? "owner" : "member"} account`
-                : "Sign in"}{" "}
+            <button className="submit-btn" type="submit" disabled={loading}>
+              {loading
+                ? isSignup
+                  ? "Creating account..."
+                  : "Signing in..."
+                : isSignup
+                  ? `Create ${role === "owner" ? "owner" : "member"} account`
+                  : "Sign in"}
+
               <ArrowRight size={18} />
             </button>
           </form>
