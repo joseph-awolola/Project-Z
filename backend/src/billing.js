@@ -61,5 +61,13 @@ export async function chargeOne(subscriptionId) {
 }
 
 export function startScheduler() {
-  cron.schedule("0 * * * *", () => runBilling().catch(console.error)); // hourly
+  cron.schedule("0 * * * *", async () => {
+    try {
+      const n = await runBilling();
+      console.log(`[scheduler] ${new Date().toISOString()} due=${n}`);
+    } catch (err) {
+      console.error("[scheduler] error:", err);
+    }
+  });
+  console.log("[scheduler] started");
 }
