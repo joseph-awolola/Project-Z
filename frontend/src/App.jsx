@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import { getMe } from "./api.js";
 import OwnerDashboard from "./pages/owner/OwnerDashboard.jsx";
+import MemberDashboard from "./pages/MemberDashboard.jsx";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -41,6 +42,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/owner" element={<OwnerDashboard />} />
+      <Route path="/member" element={<MemberDashboard />} />
     </Routes>
   );
 }
