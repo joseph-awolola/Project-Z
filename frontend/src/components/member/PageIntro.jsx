@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function PageIntro({ name }) {
   return (
     <div className="page-intro">
@@ -10,9 +12,9 @@ export default function PageIntro({ name }) {
           Manage subscriptions and keep track of every payment.
         </p>
       </div>
-      <button className="page-intro__action" type="button">
+      <Link className="page-intro__action" to="/businesses">
         Browse join page
-      </button>
+      </Link>
     </div>
   );
 }

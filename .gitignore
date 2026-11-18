@@ -3,8 +3,4 @@
 *.db
 node_modules
 dist
-<<<<<<< HEAD
 *.key
-=======
-*.md
->>>>>>> da16e12490fbcc903ee140a9c7c65662a1f02ab9

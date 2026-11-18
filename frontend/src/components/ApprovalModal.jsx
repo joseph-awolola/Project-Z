@@ -6,30 +6,37 @@ export default function ApprovalModal({
   businessName,
   onClose,
   onContinue,
+  submitting,
+  error,
 }) {
   const dialogRef = useRef(null);
 
   useEffect(() => {
     function onKeyDown(event) {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape" && !submitting) onClose();
     }
     document.addEventListener("keydown", onKeyDown);
     dialogRef.current?.focus();
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose]);
+  }, [onClose, submitting]);
 
   return (
-    <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
+    <div
+      className="modal-backdrop"
+      role="presentation"
+      onMouseDown={() => { if (!submitting) onClose(); }}
+    >
       <div
         className="modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="approval-modal-title"
+        aria-busy={submitting}
         tabIndex={-1}
         ref={dialogRef}
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <button className="modal__close" aria-label="Close" onClick={onClose}>
+        <button className="modal__close" aria-label="Close" onClick={onClose} disabled={submitting}>
           <X size={16} />
         </button>
 
@@ -61,12 +68,15 @@ export default function ApprovalModal({
           your wallet credentials.
         </p>
 
+        {submitting && <p role="status">Connecting to your wallet…</p>}
+        {error && <p className="modal__error" role="alert">{error}</p>}
+
         <div className="modal__actions">
-          <button className="btn btn--ghost" onClick={onClose}>
+          <button className="btn btn--ghost" onClick={onClose} disabled={submitting}>
             Not now
           </button>
-          <button className="btn btn--primary" onClick={onContinue}>
-            Continue to wallet
+          <button className="btn btn--primary" onClick={onContinue} disabled={submitting}>
+            {submitting ? "Connecting…" : "Continue to wallet"}
             <ArrowRight size={16} />
           </button>
         </div>

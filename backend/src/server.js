@@ -3,6 +3,7 @@ import cors from "cors";
 import routes from "./routes.js";
 import { startScheduler } from "./billing.js";
 
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";

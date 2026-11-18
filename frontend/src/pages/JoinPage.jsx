@@ -1,8 +1,7 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import ApprovalModal from "../components/ApprovalModal.jsx";
 import {
-  RefreshCw,
   ShieldCheck,
   Wallet,
   CircleCheck,
@@ -10,14 +9,7 @@ import {
 } from "lucide-react";
 import "./styles/JoinCallbackScope.css";
 import RECURPAYLOGO from "../assets/RecurPay-Logo.svg";
-
-const business = {
-  initials: "IG",
-  name: "Ironcore Gym",
-  description:
-    "A welcoming community gym focused on strength, wellbeing, and consistent progress.",
-  monthlyAmount: 35,
-};
+import { getBusiness, subscribe } from "../api.js";
 
 const features = [
   "Charged automatically each month",
@@ -28,14 +20,52 @@ const features = [
 
 export default function JoinPage() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [business, setBusiness] = useState(null);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { businessId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  function handleContinueToWallet() {
-    // Simulates the external wallet approval, this is where we would implement backend api call
-    setModalOpen(false);
-    navigate("/callback?status=success");
+  useEffect(() => {
+    let active = true;
+    getBusiness(businessId).then(({ business: result }) => {
+      if (active) setBusiness(result);
+    }).catch((requestError) => {
+      if (active) setError(requestError.message);
+    });
+    return () => { active = false; };
+  }, [businessId]);
+
+  async function handleContinueToWallet() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate(`/?returnTo=${encodeURIComponent(location.pathname)}`);
+      return;
+    }
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 45_000);
+    try {
+      setSubmitting(true);
+      setError("");
+      const { redirectUrl } = await subscribe(token, business.id, { signal: controller.signal });
+      const walletUrl = new URL(redirectUrl);
+      if (!["http:", "https:"].includes(walletUrl.protocol)) {
+        throw new Error("The wallet returned an invalid approval link.");
+      }
+      window.location.assign(walletUrl.href);
+    } catch (requestError) {
+      setError(requestError.name === "AbortError"
+        ? "The wallet did not respond in time. Check your connection and try again."
+        : requestError.message);
+    } finally {
+      window.clearTimeout(timeoutId);
+      setSubmitting(false);
+    }
   }
 
+  const monthlyAmount = business ? business.feeMinor / 100 : 0;
+  const businessName = business?.name || "Business";
   return (
     <div className="join-page">
       <header className="join-page__nav">
@@ -52,12 +82,10 @@ export default function JoinPage() {
 
       <main className="join-page__main">
         <section className="join-page__intro">
-          <div className="business-avatar" aria-hidden="true">
-            {business.initials}
-          </div>
+          <div className="business-avatar" aria-hidden="true">{businessName.slice(0, 2).toUpperCase()}</div>
           <p className="eyebrow eyebrow--teal">You're invited to join</p>
-          <h1 className="join-page__title">{business.name}</h1>
-          <p className="join-page__description">{business.description}</p>
+          <h1 className="join-page__title">{business ? businessName : "Loading business…"}</h1>
+          <p className="join-page__description">{business?.owner?.name ? `A recurring membership offered by ${business.owner.name}.` : "Review the monthly plan and authorize payments from your wallet."}</p>
 
           <div className="join-page__badges">
             <span className="join-page__badge">
@@ -75,10 +103,7 @@ export default function JoinPage() {
           <p className="eyebrow eyebrow--teal">Monthly membership</p>
 
           <div className="pricing-card__price">
-            <span className="pricing-card__amount">
-              €{Math.trunc(business.monthlyAmount)}
-              <span className="pricing-card__cents">.00</span>
-            </span>
+            <span className="pricing-card__amount">€{monthlyAmount.toFixed(2)}</span>
             <span className="pricing-card__period">per month</span>
           </div>
 
@@ -95,9 +120,10 @@ export default function JoinPage() {
 
           <button
             className="btn btn--primary btn--block"
+            disabled={!business || submitting}
             onClick={() => setModalOpen(true)}
           >
-            Subscribe for €{business.monthlyAmount}/month
+            Subscribe for €{monthlyAmount.toFixed(2)}/month
             <ArrowRight size={16} />
           </button>
 
@@ -106,6 +132,7 @@ export default function JoinPage() {
             Powered by Interledger Open Payments
           </p>
         </section>
+        {error && !modalOpen && <p role="alert">{error}</p>}
       </main>
 
       <footer className="join-page__footer">
@@ -114,10 +141,15 @@ export default function JoinPage() {
 
       {modalOpen && (
         <ApprovalModal
-          amount={business.monthlyAmount}
-          businessName={business.name}
-          onClose={() => setModalOpen(false)}
+          amount={monthlyAmount}
+          businessName={businessName}
+          onClose={() => {
+            setModalOpen(false);
+            setError("");
+          }}
           onContinue={handleContinueToWallet}
+          submitting={submitting}
+          error={error}
         />
       )}
     </div>

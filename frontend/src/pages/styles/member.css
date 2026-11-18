@@ -189,11 +189,64 @@ svg {
   transition:
     background 0.15s,
     border-color 0.15s;
+  text-decoration: none;
 }
 
 .page-intro__action:hover {
   background: #f8fbfa;
   border-color: #b8cbc6;
+}
+
+.business-directory {
+  display: grid;
+  gap: 16px;
+}
+
+.business-directory__card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.business-directory__card h2 {
+  margin: 0 0 8px;
+  font-size: 21px;
+}
+
+.business-directory__card .page-intro__eyebrow {
+  margin-bottom: 8px;
+}
+
+.business-directory__action {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-shrink: 0;
+}
+
+.business-directory__action > strong {
+  white-space: nowrap;
+}
+
+.business-directory__action > strong span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.business-directory__error {
+  margin-bottom: 20px;
+  padding: 14px 17px;
+  border: 1px solid #f0cccc;
+  border-radius: 10px;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  font-size: 13px;
 }
 
 .success-alert {
@@ -670,6 +723,16 @@ svg {
     flex-direction: column;
     align-items: flex-start;
     margin-bottom: 23px;
+  }
+
+  .business-directory__card,
+  .business-directory__action {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .business-directory__action {
+    gap: 12px;
   }
 
   .page-intro__title {

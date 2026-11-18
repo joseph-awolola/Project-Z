@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { RefreshCw } from "lucide-react";
 import "./styles/JoinCallbackScope.css";
 import RECURPAYLOGO from "../assets/RecurPay-Logo.svg";
 
