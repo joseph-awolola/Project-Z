@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import "./styles/Login.css";
 import RECURPAYLOGO from "../assets/RecurPay-Icon.svg";
-import { signup, login } from "../api.js";
+import { signup, login, getMe } from "../api.js";
 
 const benefits = [
   { icon: ShieldCheck, text: "Capped & revocable authorizations" },
