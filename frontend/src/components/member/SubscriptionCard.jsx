@@ -1,5 +1,5 @@
 import StatusBadge from "./StatusBadge";
-import { formatCurrency } from "../../data/member.js";
+import { formatCurrency } from "../../utils/formatCurrency.js";
 
 export default function SubscriptionCard({
   subscription,

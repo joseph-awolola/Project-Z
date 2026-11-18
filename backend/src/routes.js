@@ -52,6 +52,22 @@ router.post("/api/businesses", requireAuth, requireRole("OWNER"), wrap(async (re
   res.status(201).json({ business });
 }));
 
+router.patch("/api/businesses/:id", requireAuth, requireRole("OWNER"), wrap(async (req, res) => {
+  const { name, feeMinor } = req.body || {};
+  if (!name || !Number.isInteger(feeMinor) || feeMinor <= 0) {
+    return res.status(400).json({ error: "name and a positive integer feeMinor are required" });
+  }
+  const business = await prisma.business.findUnique({ where: { id: req.params.id } });
+  if (!business || business.ownerId !== req.user.id) {
+    return res.status(404).json({ error: "Business not found" });
+  }
+  const updated = await prisma.business.update({
+    where: { id: business.id },
+    data: { name, feeMinor },
+  });
+  res.json({ business: updated });
+}));
+
 router.get("/api/owner/businesses", requireAuth, requireRole("OWNER"), wrap(async (req, res) => {
   const list = await prisma.business.findMany({
     where: { ownerId: req.user.id },

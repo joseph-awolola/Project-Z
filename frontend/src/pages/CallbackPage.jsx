@@ -1,6 +1,5 @@
 import { Link, useSearchParams } from "react-router-dom";
 import {
-  RefreshCw,
   Check,
   TriangleAlert,
   ShieldCheck,
@@ -9,14 +8,10 @@ import {
 import "./styles/JoinCallbackScope.css";
 import RECURPAYLOGO from "../assets/RecurPay-Logo.svg";
 
-const subscription = {
-  business: "Ironcore Gym",
-  monthlyAmount: 35,
-};
-
 export default function CallbackPage() {
   const [searchParams] = useSearchParams();
   const isError = searchParams.get("status") === "error";
+  const reason = searchParams.get("reason");
 
   return (
     <div className="callback-page">
@@ -28,7 +23,7 @@ export default function CallbackPage() {
       </Link>
 
       <div className="callback-card">
-        {isError ? <ErrorState /> : <SuccessState />}
+        {isError ? <ErrorState reason={reason} /> : <SuccessState />}
       </div>
     </div>
   );
@@ -45,33 +40,9 @@ function SuccessState() {
       </p>
       <h1 className="callback-card__title">Subscription active</h1>
       <p className="callback-card__body">
-        Your {subscription.business} membership is ready. Future payments will
-        happen automatically within your approved limit.
+        Your wallet authorization was received. The subscription and its first
+        payment are being processed; you can review the latest status in your dashboard.
       </p>
-
-      <dl className="callback-card__grid">
-        <div>
-          <dt>Business</dt>
-          <dd>{subscription.business}</dd>
-        </div>
-        <div>
-          <dt>Monthly amount</dt>
-          <dd>€{subscription.monthlyAmount.toFixed(2)}</dd>
-        </div>
-        <div>
-          <dt>First payment</dt>
-          <dd>Today</dd>
-        </div>
-        <div>
-          <dt>Authorization</dt>
-          <dd>
-            <span className="status-pill status-pill--active">
-              <span className="status-pill__dot" />
-              Active
-            </span>
-          </dd>
-        </div>
-      </dl>
 
       <Link to="/member" className="btn btn--primary btn--block">
         Go to my dashboard
@@ -86,7 +57,7 @@ function SuccessState() {
   );
 }
 
-function ErrorState() {
+function ErrorState({ reason }) {
   return (
     <>
       <div className="callback-card__icon callback-card__icon--error">
@@ -103,10 +74,9 @@ function ErrorState() {
 
       <div className="callback-alert">
         <TriangleAlert size={18} />
-        <span>
-          The wallet connection was declined or timed out. Check your wallet and
-          try again.
-        </span>
+        <span>{reason === "grant_failed"
+          ? "The wallet authorization could not be completed. Check your wallet and try again."
+          : "The wallet connection was declined or timed out. Check your wallet and try again."}</span>
       </div>
 
       <div className="callback-card__actions">

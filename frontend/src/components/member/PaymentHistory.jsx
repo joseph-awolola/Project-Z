@@ -1,5 +1,5 @@
 import StatusBadge from "./StatusBadge";
-import { formatCurrency } from "../../data/member.js";
+import { formatCurrency } from "../../utils/formatCurrency.js";
 
 export default function PaymentHistory({ payments }) {
   return (
@@ -51,7 +51,7 @@ export default function PaymentHistory({ payments }) {
                   />
                 </td>
                 <td className="payment-history__muted">
-                  {formatCurrency(payment.processingFee)}
+                  {payment.processingFee == null ? "—" : formatCurrency(payment.processingFee)}
                 </td>
                 <td className="payment-history__amount">
                   {formatCurrency(payment.amount)}

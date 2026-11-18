@@ -42,8 +42,8 @@ export default function CancelModal({ businessName, onKeep, onConfirm }) {
         </div>
 
         <p className="cancel-modal__description">
-          Future charges to {businessName} will stop immediately. You may lose
-          access at the end of your current billing period.
+          RecurPay will stop scheduling future charges to {businessName}.
+          Canceling here does not revoke the authorization at your wallet provider.
         </p>
 
         <div className="cancel-modal__warning">
@@ -62,7 +62,7 @@ export default function CancelModal({ businessName, onKeep, onConfirm }) {
               strokeLinejoin="round"
             />
           </svg>
-          <span>This action revokes the recurring payment authorization.</span>
+          <span>To fully revoke wallet authorization, also manage it with your wallet provider.</span>
         </div>
 
         <div className="cancel-modal__actions">

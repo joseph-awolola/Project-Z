@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   ArrowLeftRight,
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 import "./styles/Login.css";
 import RECURPAYLOGO from "../assets/RecurPay-Icon.svg";
-import { signup, login, getMe } from "../api.js";
+import { signup, login } from "../api.js";
 
 const benefits = [
   { icon: ShieldCheck, text: "Capped & revocable authorizations" },
@@ -23,7 +24,11 @@ const benefits = [
 ];
 
 export default function Login() {
-  const [mode, setMode] = useState("signup");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [mode, setMode] = useState(() =>
+    new URLSearchParams(location.search).get("mode") === "signin" ? "signin" : "signup",
+  );
   const [role, setRole] = useState("owner");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -96,10 +101,19 @@ export default function Login() {
 
       localStorage.setItem("token", result.token);
       localStorage.setItem("user", JSON.stringify(result.user));
-
-      setNotice(
-        isSignup ? "Account created successfully!" : "Login successful!",
-      );
+      const returnTo = new URLSearchParams(location.search).get("returnTo");
+      const roleHome = result.user.role === "OWNER" ? "/owner" : "/member";
+      const safeReturnTo = returnTo?.startsWith("/") && !returnTo.startsWith("//")
+        ? returnTo
+        : null;
+      const returnToPath = safeReturnTo
+        ? new URL(safeReturnTo, window.location.origin).pathname
+        : null;
+      const isDashboardPath = returnToPath === "/owner" || returnToPath === "/member";
+      const destination = safeReturnTo && (!isDashboardPath || returnToPath === roleHome)
+        ? safeReturnTo
+        : roleHome;
+      navigate(destination, { replace: true });
     } catch (error) {
       setNotice(error.message);
     } finally {
