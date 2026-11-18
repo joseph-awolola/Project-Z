@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import "./styles/Login.css";
 import RECURPAYLOGO from "../assets/RecurPay-Icon.svg";
-import { signup } from "../api.js";
+import { signup, login } from "../api.js";
 
 const benefits = [
   { icon: ShieldCheck, text: "Capped & revocable authorizations" },
@@ -46,47 +46,60 @@ export default function Login() {
   async function submit(e) {
     e.preventDefault();
 
-    if (!isSignup) {
-      setNotice("Login integration is our next step.");
-      return;
-    }
-
-    if (!form.name.trim()) {
-      setNotice("Please enter your full name.");
-      return;
-    }
-
     if (!form.email.trim()) {
       setNotice("Please enter your email address.");
       return;
     }
 
-    if (form.password.length < 8) {
-      setNotice("Password must be at least 8 characters.");
+    if (!form.password) {
+      setNotice("Please enter your password.");
       return;
     }
 
-    if (!form.walletUrl.trim()) {
-      setNotice("Please enter your wallet URL.");
-      return;
+    if (isSignup) {
+      if (!form.name.trim()) {
+        setNotice("Please enter your full name.");
+        return;
+      }
+
+      if (form.password.length < 8) {
+        setNotice("Password must be at least 8 characters.");
+        return;
+      }
+
+      if (!form.walletUrl.trim()) {
+        setNotice("Please enter your wallet URL.");
+        return;
+      }
     }
 
     try {
       setLoading(true);
       setNotice("");
 
-      const result = await signup({
-        name: form.name,
-        email: form.email,
-        password: form.password,
-        role: role === "owner" ? "OWNER" : "MEMBER",
-        walletUrl: form.walletUrl,
-      });
+      let result;
+
+      if (isSignup) {
+        result = await signup({
+          name: form.name,
+          email: form.email,
+          password: form.password,
+          role: role === "owner" ? "OWNER" : "MEMBER",
+          walletUrl: form.walletUrl,
+        });
+      } else {
+        result = await login({
+          email: form.email,
+          password: form.password,
+        });
+      }
 
       localStorage.setItem("token", result.token);
       localStorage.setItem("user", JSON.stringify(result.user));
 
-      setNotice("Account created successfully!");
+      setNotice(
+        isSignup ? "Account created successfully!" : "Login successful!",
+      );
     } catch (error) {
       setNotice(error.message);
     } finally {
